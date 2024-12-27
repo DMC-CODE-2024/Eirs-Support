@@ -1,0 +1,1 @@
+org.springframework.boot.env.EnvironmentAware=com.gl.ceir.panel.config.DatabaseAppConfigInitializer
