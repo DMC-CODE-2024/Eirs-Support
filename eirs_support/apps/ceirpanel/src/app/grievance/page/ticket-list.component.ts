@@ -30,6 +30,7 @@ export class TicketListComponent extends ExtendableListComponent implements OnIn
   dashboard!:string;
   filterModel: FilterModel = {clientType: ''} as FilterModel;
   lodash =  _;
+  rowSizeForExport!: number;
 
   constructor(
     private cdRef: ChangeDetectorRef,
@@ -40,6 +41,7 @@ export class TicketListComponent extends ExtendableListComponent implements OnIn
     public permission: NgxPermissionsService,
     public config: ConfigService) {
     super();
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
   ngOnInit(): void {
     this.msisdn = this.route.snapshot.paramMap.get('msisdn') || '';
@@ -94,7 +96,7 @@ export class TicketListComponent extends ExtendableListComponent implements OnIn
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/ticket/pagination', st).subscribe({
       next: (result) => {
         const groups = (result as TicketList).content;

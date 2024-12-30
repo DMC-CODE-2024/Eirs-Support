@@ -76,6 +76,13 @@ import { ConfigService } from 'ng-config-service';
                 [placeholder]="'filter.roleName' | translate"/>
             </div>
         </div>
+        <div class="clr-col-2 m-0 p-0 ms-1" *ngIf="featureName">
+            <div class="form-group">
+                <label>{{ "filter.featureName" | translate }}</label>
+                <input type="text" id="featureName" name="featureName" [(ngModel)]="filterModel.featureName" class="form-control form-control-sm bg-primary-subtle"  
+                [placeholder]="'filter.featureName' | translate"/>
+            </div>
+        </div>
         <div class="clr-col-2 m-0 p-0 ms-1" *ngIf="moduleTagName">
             <div class="form-group">
                 <label>{{ "filter.moduleTagName" | translate }}</label>
@@ -88,13 +95,6 @@ import { ConfigService } from 'ng-config-service';
                 <label>{{ "filter.moduleName" | translate }}</label>
                 <input type="text" id="moduleName" name="moduleName" [(ngModel)]="filterModel.moduleName" class="form-control form-control-sm bg-primary-subtle"   
                 [placeholder]="'filter.moduleName' | translate"/>
-            </div>
-        </div>
-        <div class="clr-col-2 m-0 p-0 ms-1" *ngIf="featureName">
-            <div class="form-group">
-                <label>{{ "filter.featureName" | translate }}</label>
-                <input type="text" id="featureName" name="featureName" [(ngModel)]="filterModel.featureName" class="form-control form-control-sm bg-primary-subtle"  
-                [placeholder]="'filter.featureName' | translate"/>
             </div>
         </div>
         <div class="clr-col-2 m-0 p-0 ms-1" *ngIf="featureModuleName">

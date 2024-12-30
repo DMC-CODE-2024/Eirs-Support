@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClrForm, ClrStepButton, ClrStepper } from '@clr/angular';
@@ -9,6 +10,8 @@ import { MenuTransportService } from '../../core/services/common/menu.transport.
 import { ApiUtilService } from '../../core/services/common/api.util.service';
 import { TagModel } from '../../core/models/tag.model';
 import { Observable } from 'rxjs';
+import { AlertComponent } from '../../core/components/alert.component';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'ceirpanel-tag-add',
@@ -30,6 +33,11 @@ import { Observable } from 'rxjs';
     </div>
     <div class="card-block m-1 p-1">
     <form clrStepper clrForm clrLayout="vertical" class="m-0 p-0" #f="ngForm" (ngSubmit)="f.form.valid && onSubmit(f)">
+      <clr-alert *ngIf="error" [clrAlertType]="error.type" [clrAlertAppLevel]="true">
+        <clr-alert-item>
+          <span class="alert-text text-white">{{ "message." + error.message | translate }}</span>
+        </clr-alert-item>
+      </clr-alert>
       <fieldset [disabled]="readonly" class="scheduler-border">
         <legend class="scheduler-border">{{ "tag.pageTitle.title" | translate }}</legend>
         <div class="clr-row m-0 p-0">
@@ -65,6 +73,7 @@ import { Observable } from 'rxjs';
    </div>
    <ceirpanel-ceir-confirmation [open]="open" (confirmation)="openClose($event)"></ceirpanel-ceir-confirmation>
    <ceirpanel-ceir-cancel [open]="cancel" (confirmation)="cancelOpenClose($event)"></ceirpanel-ceir-cancel>
+   <ceirpanel-ceir-alert></ceirpanel-ceir-alert>
   `,
   styles: [`
   :host ::ng-deep .clr-combobox-wrapper {
@@ -84,7 +93,9 @@ export class TagAddComponent implements OnInit {
   tag: TagModel = {} as TagModel;
   public open = false;
   public cancel = false;
-
+  error!:any;
+  @ViewChild(AlertComponent, { static: true }) private alert!: AlertComponent;
+  
   constructor(
     private cdref: ChangeDetectorRef,
     private route: ActivatedRoute,
@@ -125,7 +136,12 @@ export class TagAddComponent implements OnInit {
     observable.subscribe({
       next: (_data) => {
         console.log('tag save: ', (_data as GroupModel).id);
-        return this.router.navigate(['/tag']);
+        if (_.isEqual(_.get(_data, 'status'), 'failed')) {
+          this.error = {type: 'danger', message: _.get(_data,'message')};
+          setTimeout(() => this.error = null, 10000);
+        } else {
+          this.router.navigate(['/tag']);
+        }
       },
       error: (e) => {
         console.log(e);

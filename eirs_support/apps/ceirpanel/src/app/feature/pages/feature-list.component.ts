@@ -59,14 +59,14 @@ import { FeatureDeleteComponent } from '../component/feature-delete.component';
             <ceirpanel-list-action [state]="state" (download)="export($event)" (refresh)="refresh($event)"
             (filter)="callFilter()" (resetFilter)="resetFilter()" [feature]="'FEATURE'"></ceirpanel-list-action>
           </clr-dg-action-bar>
-          <clr-dg-column [clrDgSortBy]="'featureName'">{{ "datalist.featureName" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'createdOn'">{{ "datalist.createDate" | translate }}</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'featureName'">{{ "datalist.featureName" | translate }}</clr-dg-column>
           <clr-dg-column>{{ "datalist.category" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'status'">{{ "datalist.status" | translate }}</clr-dg-column>
           <clr-dg-column>{{ "datalist.action" | translate }}</clr-dg-column>
           <clr-dg-row *ngFor="let feature of features; let i = index;" [clrDgItem]="feature">
-            <clr-dg-cell>{{feature.featureName}}</clr-dg-cell>
             <clr-dg-cell>{{feature.createdOn|date:'yyyy-MM-dd'}}</clr-dg-cell>
+            <clr-dg-cell>{{feature.featureName}}</clr-dg-cell>
             <clr-dg-cell>{{feature.category}}</clr-dg-cell>
             <clr-dg-cell><ceirpanel-status [status]="feature.status"></ceirpanel-status></clr-dg-cell>
 
@@ -143,6 +143,7 @@ export class FeatureListComponent extends ExtendableListComponent {
   public loading = true;
   public selected: any[] = [];
   @ViewChild(FeatureDeleteComponent) deleteUser !: FeatureDeleteComponent;
+  rowSizeForExport!:number;
   constructor(
     private deviceService: DeviceService,
     private cdRef: ChangeDetectorRef,
@@ -153,6 +154,7 @@ export class FeatureListComponent extends ExtendableListComponent {
     public uploadService: UploadService,
     private featureService: FeatureService) {
     super();
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -206,11 +208,11 @@ export class FeatureListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/feature/pagination', st).subscribe({
       next: (result) => {
         const features = (result as FeatureList).content;
-        this.exportService.features(features, `features-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["ID", "Created On", "Feature Name","Category","Status"]});
+        this.exportService.features(features, `${_.now()}_features`,{showLabels: true,headers: ["ID", "Created On", "Feature Name","Category","Status"]});
       }
     });
   }

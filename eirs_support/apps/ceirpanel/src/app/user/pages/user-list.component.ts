@@ -22,6 +22,7 @@ import { DeviceService } from '../../core/services/device.service';
 import { PasswordResetComponent } from '../component/password-reset';
 import { UserDeleteComponent } from '../component/user-delete.component';
 import { UserService } from '../service/user.service';
+import { ApiUtilService } from '../../core/services/common/api.util.service';
 
 @Component({
   selector: 'ceirpanel-user-list',
@@ -48,15 +49,18 @@ export class UserListComponent extends ExtendableListComponent {
   list!: Array<UserModel>;
   public total!: number;
   public loading = true;
+  rowSizeForExport!: number;
   constructor(
     private userService: UserService,
     private cdRef: ChangeDetectorRef,
     public permission: NgxPermissionsService,
     public exportService: ExportService,
     private router: Router,
-    public menuTransport: MenuTransportService
+    public menuTransport: MenuTransportService,
+    private apicall: ApiUtilService
   ) {
     super();
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -129,14 +133,14 @@ export class UserListComponent extends ExtendableListComponent {
 
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if (st && st.page) st.page.size = 10000;
+    if (st && st.page) st.page.size = this.rowSizeForExport;
     this.userService
       .pagination(st)
       .pipe(take(1))
       .subscribe((result) => {
         this.exportService.users(
           (result as UserList).content,
-          `users-${new Date().getMilliseconds()}`,
+          `${_.now()}_users`,
           {
             showLabels: true,
             headers: [

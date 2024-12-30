@@ -138,6 +138,7 @@ export class RoleListComponent extends ExtendableListComponent{
   public loading = true;
   public selected: any[] = [];
   @ViewChild(RoleDeleteComponent) deleteUser !: RoleDeleteComponent;
+  rowSizeForExport!: number;
   constructor(
     private deviceService: DeviceService, 
     private cdRef: ChangeDetectorRef,
@@ -146,6 +147,7 @@ export class RoleListComponent extends ExtendableListComponent{
      public exportService: ExportService,
      private roleService: RoleService) { 
       super();
+      this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
      }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -193,11 +195,11 @@ export class RoleListComponent extends ExtendableListComponent{
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 1000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/role/pagination', st).subscribe({
       next: (result) => {
         const modules = (result as RoleList).content;
-        this.exportService.roles(modules, `roles-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["ID", "Created On", "Role","Access","Status"]});
+        this.exportService.roles(modules, `${_.now()}-roles`,{showLabels: true,headers: ["ID", "Created On", "Role","Access","Status"]});
       }
     });
   }

@@ -322,6 +322,7 @@
               <input type="password" [(ngModel)]="templateForm.password.confirm" name="confirm" ngValidateEqual="password" #modelConfirmPassword="ngModel"
                 class="form-control form-control-sm" [placeholder]="'user.password.confirm.placeholder' | translate" id="confirm" [required]="page==='add'"
                 [ngClass]="{ 'is-invalid': (f.touched || f.submitted) && modelConfirmPassword.errors }" aria-autocomplete="none"/>
+                
               <div *ngIf="f.submitted && modelConfirmPassword.errors" class="invalid-feedback">
                 <div *ngIf="modelConfirmPassword.errors['required']">{{ "user.password.confirm.equal" | translate }}</div>
               </div>

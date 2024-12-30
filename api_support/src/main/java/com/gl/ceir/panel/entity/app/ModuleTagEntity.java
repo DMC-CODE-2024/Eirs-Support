@@ -24,7 +24,7 @@ public class ModuleTagEntity extends AbstractTimestampEntity implements Serializ
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(length = 100)
+	@Column(length = 100, unique = true)
 	private String moduleTagName;
 	@Column(length = 255)
 	private String description;

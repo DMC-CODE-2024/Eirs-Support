@@ -10,6 +10,7 @@ import { GroupRoleDto } from '../dto/group.role.dto';
 import { GroupRoleService } from '../service/group.role.service';
 import { GroupRoleDeleteComponent } from '../component/group-role-delete.component';
 import { ActivatedRoute } from '@angular/router';
+import { ApiUtilService } from '../../core/services/common/api.util.service';
 
 @Component({
   selector: 'ceirpanel-group-role-list',
@@ -27,17 +28,20 @@ export class GroupRoleListComponent extends ExtendableListComponent {
   list: GroupRoleDto = { totalElements: 0 } as GroupRoleDto;
   groupId = 0;
   public loading = true;
+  rowSizeForExport!: number;
   constructor(
     private cdRef: ChangeDetectorRef,
     public exportService: ExportService,
     private groupRoleService: GroupRoleService,
-    route: ActivatedRoute
+    route: ActivatedRoute,
+    private apicall: ApiUtilService
   ) {
     super();
     route.params.subscribe(param => {
       this.groupId = param['groupId'] || 0;
       if(this.state)this.refresh(this.state);
-  });
+    });
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -55,11 +59,11 @@ export class GroupRoleListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if (st && st.page) st.page.size = 10000;
+    if (st && st.page) st.page.size = this.rowSizeForExport;
     this.groupRoleService.pagination(st).pipe(take(1)).subscribe((modules: GroupRoleDto) => {
         this.exportService.groupRoles(
             modules.content,
-            `group-roles-${new Date().getMilliseconds()}`,
+            `${_.now()}-group-roles`,
             {
               showLabels: true,
               headers: ['Created On', 'Group', 'Role','Status'],

@@ -99,7 +99,6 @@ public class UserApplication implements CommandLineRunner {
 	public ExpiringMap<String, String> session() {
 		ExpiringMap<String, String> map = ExpiringMap.builder().variableExpiration()
 				.expirationListener((key, username) -> {
-					System.out.println("Username:"+ username);
 					try {userRepository.decreaseActiveSession(username.toString());}catch(Exception e) {}}).build();
 		return map;
 	}

@@ -151,7 +151,8 @@
         "userFileTypeNotMatched": "Accepts .jpg, .jpeg and .png file formats.",
         "userFileSizeExceeded": "2MB max file size can be attached",
         "userEmpIdCardFileTypeNotMatched": "Accepts .jpg, .jpeg and .png file formats.",
-        "userEmpIdCardFileSizeExceeded": "2MB max file size can be attached"
+        "userEmpIdCardFileSizeExceeded": "2MB max file size can be attached",
+        "duplicateNowAllowed": "Duplicate Entry Not Allowed"
     },
     "error": {
         "emailAlreadyRegistered": "Sorry, this email address is already registered."

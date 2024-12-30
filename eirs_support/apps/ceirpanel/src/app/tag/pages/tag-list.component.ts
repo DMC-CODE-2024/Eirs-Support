@@ -59,15 +59,15 @@ import { TagDeleteComponent } from '../component/tag-delete.component';
             <ceirpanel-list-action [state]="state" (download)="export($event)" (refresh)="refresh($event)"
             (filter)="callFilter()" (resetFilter)="resetFilter()" [feature]="'TAG'"></ceirpanel-list-action>
           </clr-dg-action-bar>
-          <clr-dg-column [clrDgSortBy]="'moduleTagName'">{{ "datalist.moduleTagName" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'createdOn'">{{ "datalist.createDate" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'updatedOn'">{{ "datalist.modifiedDate" | translate }}</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'moduleTagName'">{{ "datalist.moduleTagName" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'status'">{{ "datalist.status" | translate }}</clr-dg-column>
           <clr-dg-column>{{ "datalist.action" | translate }}</clr-dg-column>
           <clr-dg-row *ngFor="let tag of tags; let i = index;" [clrDgItem]="tag">
-            <clr-dg-cell>{{tag.moduleTagName}}</clr-dg-cell>
             <clr-dg-cell>{{tag.createdOn|date:'yyyy-MM-dd'}}</clr-dg-cell>
-            <clr-dg-cell>{{tag.updatedOn}}</clr-dg-cell>
+            <clr-dg-cell>{{tag.updatedOn|date:'yyyy-MM-dd'}}</clr-dg-cell>
+            <clr-dg-cell>{{tag.moduleTagName}}</clr-dg-cell>
             <clr-dg-cell><ceirpanel-status [status]="tag.status"></ceirpanel-status></clr-dg-cell>
             <clr-dg-cell>
               <clr-dropdown [clrCloseMenuOnItemClick]="false">
@@ -142,6 +142,7 @@ export class TagListComponent extends ExtendableListComponent{
   public loading = true;
   public selected: any[] = [];
   @ViewChild(TagDeleteComponent) deleteUser !: TagDeleteComponent;
+  rowSizeForExport!: number;
 
   constructor(
     private deviceService: DeviceService, 
@@ -151,6 +152,7 @@ export class TagListComponent extends ExtendableListComponent{
     public exportService: ExportService,
     private tagService: TagService) { 
       super();
+      this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
     }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -205,11 +207,11 @@ export class TagListComponent extends ExtendableListComponent{
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/tag/pagination', st).subscribe({
       next: (result) => {
         const tags = (result as TagList).content;
-        this.exportService.tags(tags, `tags-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["ID", "Created On", "Tag Name","Status"]});
+        this.exportService.tags(tags, `${_.now()}_tags`,{showLabels: true,headers: ["ID", "Created On", "Tag Name","Status"]});
       }
     });
   }

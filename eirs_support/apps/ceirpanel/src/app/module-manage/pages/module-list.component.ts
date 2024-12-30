@@ -64,15 +64,15 @@ import { take } from 'rxjs';
             <ceirpanel-list-action [state]="state" (download)="export($event)" (refresh)="refresh($event)"
             (filter)="callFilter()" (resetFilter)="resetFilter()" [feature]="'MODULE'"></ceirpanel-list-action>
           </clr-dg-action-bar>
-          <clr-dg-column [clrDgSortBy]="'moduleName'">{{ "datalist.moduleName" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'createdOn'">{{ "datalist.createDate" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'updatedOn'">{{ "datalist.modifiedDate" | translate }}</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'moduleName'">{{ "datalist.moduleName" | translate }}</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'status'">{{ "datalist.status" | translate }}</clr-dg-column>
           <clr-dg-column>{{ "datalist.action" | translate }}</clr-dg-column>
           <clr-dg-row *ngFor="let module of modules; let i = index;" [clrDgItem]="module">
-            <clr-dg-cell>{{module.moduleName}}</clr-dg-cell>
             <clr-dg-cell>{{module.createdOn|date:'yyyy-MM-dd'}}</clr-dg-cell>
             <clr-dg-cell>{{module.updatedOn|date:'yyyy-MM-dd'}}</clr-dg-cell>
+            <clr-dg-cell>{{module.moduleName}}</clr-dg-cell>
             <clr-dg-cell><ceirpanel-status [status]="module.status"></ceirpanel-status></clr-dg-cell>
             <clr-dg-cell>
               <clr-dropdown [clrCloseMenuOnItemClick]="false">
@@ -145,6 +145,7 @@ export class ModuleListComponent extends ExtendableListComponent {
   public loading = true;
   public selected: any[] = [];
   @ViewChild(ModuleDeleteComponent) deleteUser !: ModuleDeleteComponent;
+  rowSizeForExport!: number;
   constructor(
     private deviceService: DeviceService, 
     private cdRef: ChangeDetectorRef, 
@@ -154,7 +155,7 @@ export class ModuleListComponent extends ExtendableListComponent {
     public exportService: ExportService,
     private moduleService: ModuleService) {
       super();
-      console.log('permissions: ', this.permission.getPermissions());
+      this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
      }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -209,11 +210,11 @@ export class ModuleListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 1000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/module/pagination', st).subscribe({
       next: (result) => {
         const tags = (result as ModuleMangeList).content;
-        this.exportService.modules(tags, `modules-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["ID", "Created On", "Module Name","Status"]});
+        this.exportService.modules(tags, `${_.now()}_modules`,{showLabels: true,headers: ["ID", "Created On", "Module Name","Status"]});
       }
     });
   }

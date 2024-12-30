@@ -38,6 +38,8 @@ public class ConfigController {
 	private String mobileRegexWithBlank;
 	@Value("${mdr.portal.url:}")
 	private String mdrPortalUrl;
+	@Value("${sys_param.file.max-file-record:1000}")
+	private long rowSizeForExport;
 	
 	@PostMapping("system/pagination")
 	public ResponseEntity<?> pagination(@RequestBody PaginationRequestDto ulrd) {
@@ -56,6 +58,7 @@ public class ConfigController {
 		map.put("mobileRegex", mobileRegex);
 		map.put("mobileRegexWithBlank", mobileRegexWithBlank);
 		map.put("mdrPortalUrl", mdrPortalUrl);
+		map.put("rowSizeForExport", rowSizeForExport);
 		return map;
 	}
 }

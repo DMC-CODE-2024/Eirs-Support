@@ -11,6 +11,7 @@ import { UserGroupDto } from '../../user-group/dto/user-group.dto';
 import { UserGroupDeleteComponent } from '../component/user-group-delete.component';
 import { UserGroupService } from '../service/user.group.service';
 import { UserService } from '../service/user.service';
+import { ApiUtilService } from '../../core/services/common/api.util.service';
 
 
 @Component({
@@ -23,19 +24,22 @@ export class UserGroupListComponent extends ExtendableListComponent {
   @ViewChild(UserGroupDeleteComponent) userGroupDelete!: UserGroupDeleteComponent;
   groupId = 0;
   public loading = true;
+  rowSizeForExport!: number;
   constructor(
     private userService: UserService,
     private userGroupService: UserGroupService,
     private cdRef: ChangeDetectorRef,
     public exportService: ExportService,
     route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private apicall: ApiUtilService
   ) {
     super();
     route.params.subscribe(param => {
       this.groupId = param['groupId'] || 0;
       if(this.state)this.refresh(this.state);
     });
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
   refresh(state: ClrDatagridStateInterface) {
     this.loading = true;
@@ -53,14 +57,14 @@ export class UserGroupListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.userGroupService
       .pagination(st)
       .pipe(take(1))
       .subscribe((modules: UserGroupDto) => {
         this.exportService.userGroups(
           modules.content,
-          `user-groups-${new Date().getMilliseconds()}`,
+          `${_.now()}-user-groups`,
           {
             showLabels: true,
             headers: ['Created On', 'User', 'Group','Status'],

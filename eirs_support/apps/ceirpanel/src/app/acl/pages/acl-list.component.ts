@@ -156,6 +156,7 @@ export class AclListComponent extends ExtendableListComponent {
   public loading = true;
   public selected: any[] = [];
   @ViewChild(AclDeleteComponent) deleteUser !: AclDeleteComponent;
+  rowSizeForExport!: number;
   constructor(
     private deviceService: DeviceService, 
     private cdRef: ChangeDetectorRef,
@@ -164,7 +165,8 @@ export class AclListComponent extends ExtendableListComponent {
      public exportService: ExportService,
      private aclService: AclService) { 
       super();
-     }
+      this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
+  }
 
   refresh(state: ClrDatagridStateInterface) {
     this.loading = true;
@@ -189,11 +191,11 @@ export class AclListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.apicall.post('/acl/pagination', st).subscribe({
       next: (result) => {
         const modules = (result as AclList).content;
-        this.exportService.acl(modules, `acl-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["Created On", "Role Name","Feature", "Module"]});
+        this.exportService.acl(modules, `${_.now()}-acl`,{showLabels: true,headers: ["Created On", "Role Name","Feature", "Module"]});
       },
       complete: () => console.log('completed')
     });

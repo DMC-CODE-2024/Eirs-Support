@@ -18,8 +18,8 @@ import { MenuTransportService } from '../../core/services/common/menu.transport.
   styles: [``],
 })
 export class UserMobileEmailVerificationComponent implements OnInit, AfterViewInit {
-  @ViewChild(NgOtpInputComponent, { static: false}) emailOtpInput!:NgOtpInputComponent;
-  @ViewChild(NgOtpInputComponent, { static: false}) mobileOtpInput!:NgOtpInputComponent;
+  @ViewChild('emailOtpInput') emailOtpInput!:NgOtpInputComponent;
+  @ViewChild('mobileOtpInput') mobileOtpInput!:NgOtpInputComponent;
   user: UserModel = {} as UserModel;
   @ViewChild(ClrForm, { static: true }) private clrForm!: ClrForm;
   emailotp!: string;
@@ -170,10 +170,12 @@ export class UserMobileEmailVerificationComponent implements OnInit, AfterViewIn
     clearInterval(this.interval);
   }
   sendotp(){
+    if(!_.isEmpty(this.mobileOtpInput))this.mobileOtpInput.setValue('');
+    if(!_.isEmpty(this.emailOtpInput))this.emailOtpInput.setValue('');
+    
     this.timeLeft = this.subscribeTimer;
     this.startTimer();
     if(this.email !== this.user.profile.email) {
-        if(!_.isEmpty(this.emailOtpInput))this.emailOtpInput.setValue('');
         this.apicall.get(`/user/send-otp/EMAIL/${this.user.profile.email}`).subscribe({
             next: (_email) => {
                 if(_.isEqual((_email as any).message, 'sendOtpSuccess')) {
@@ -187,7 +189,6 @@ export class UserMobileEmailVerificationComponent implements OnInit, AfterViewIn
         });
     }
     if(this.msisdn !== this.user.profile.phoneNo) {
-        if(!_.isEmpty(this.mobileOtpInput))this.mobileOtpInput.setValue('');
         const msisdn = _.startsWith(this.user.profile.phoneNo, this.countryCode) ? this.user.profile.phoneNo : this.countryCode + this.user.profile.phoneNo;
         this.apicall.get(`/user/send-otp/SMS/${msisdn}`).subscribe({
             next: (_sms) => {

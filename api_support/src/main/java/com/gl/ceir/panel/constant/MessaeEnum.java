@@ -6,7 +6,9 @@ public enum MessaeEnum {
 	PASS_CHANGE_SUCCESS("changePasswordSuccess"),
 	SAVE_USER_FAILED("saveUserFailed"),
 	SAVE_USER_SUCCESS("saveUserSuccess"),
-	EMAIL_ALREADY_EXIST("emailAlreadyRegistered");
+	EMAIL_ALREADY_EXIST("emailAlreadyRegistered"),
+	DUPLICATE("duplicateNowAllowed"),
+	UNKNOWN("unknown");
 
 	public String message;
 

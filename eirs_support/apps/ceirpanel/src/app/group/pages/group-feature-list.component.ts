@@ -10,6 +10,7 @@ import { GroupFeatureDeleteComponent } from '../component/group-feature-delete.c
 import { GroupFeatureDto } from '../dto/group.feature.dto';
 import { GroupFeatureService } from '../service/group.feature.service';
 import { ActivatedRoute } from '@angular/router';
+import { ApiUtilService } from '../../core/services/common/api.util.service';
 
 @Component({
   selector: 'ceirpanel-group-feature-list',
@@ -27,17 +28,20 @@ export class GroupFeatureListComponent extends ExtendableListComponent {
   list: GroupFeatureDto = { totalElements: 0 } as GroupFeatureDto;
   groupId = 0;
   public loading = true;
+  rowSizeForExport!:number;
   constructor(
     private cdRef: ChangeDetectorRef,
     public exportService: ExportService,
     private groupFeatureService: GroupFeatureService,
-    route: ActivatedRoute
+    route: ActivatedRoute,
+    private apicall: ApiUtilService
   ) {
     super();
     route.params.subscribe(param => {
       this.groupId = param['groupId'] || 0;
       if(this.state)this.refresh(this.state);
-  });
+    });
+    this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -56,14 +60,14 @@ export class GroupFeatureListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.groupFeatureService
       .pagination(st)
       .pipe(take(1))
       .subscribe((modules: GroupFeatureDto) => {
         this.exportService.groupFeatures(
           modules.content,
-          `group-features-${new Date().getMilliseconds()}`,
+          `${_.now()}-group-features`,
           {
             showLabels: true,
             headers: ['Created On', 'Group', 'Feature','Status'],

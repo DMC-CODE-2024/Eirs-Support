@@ -29,4 +29,5 @@ public class MessageResponse implements Serializable {
 	@Default
 	private List<ErrorDto> messages = new ArrayList<>();
 	private String message;
+	private Object data;
 }

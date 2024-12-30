@@ -27,19 +27,45 @@ public class DatabaseAppConfigInitializer implements BeanPostProcessor, Initiali
 
 	@Override
 	public void afterPropertiesSet() {
-		if (environment != null) {
-			Map<String, Object> systemConfigMap = new HashMap<>();
-			String sql = "SELECT tag,value from eirs_response_param";
-			List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
-
-			for (Map<String, Object> map : maps) {
-				String key = String.valueOf(map.get("tag"));
-				Object value = map.get("value");
-				systemConfigMap.put(key, value);
-				log.info("loading db eirs_response_param, [key {}=value {}]", key, value);
+		try {
+			if (environment != null) {
+				Map<String, Object> systemConfigMap = new HashMap<>();
+				String sql = "SELECT tag,value from eirs_response_param";
+				List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+	
+				for (Map<String, Object> map : maps) {
+					String key = String.valueOf(map.get("tag"));
+					Object value = map.get("value");
+					systemConfigMap.put(key, value);
+					log.info("loading db eirs_response_param, [key {}=value {}]", key, value);
+				}
+				String propertySourceName = "propertiesInsideDatabase";
+				environment.getPropertySources().addFirst(new MapPropertySource(propertySourceName, systemConfigMap));
 			}
-			String propertySourceName = "propertiesInsideDatabase";
-			environment.getPropertySources().addFirst(new MapPropertySource(propertySourceName, systemConfigMap));
+			this.readFromSysParam();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void readFromSysParam() {
+		try {
+			if (environment != null) {
+				Map<String, Object> systemConfigMap = new HashMap<>();
+				String sql = "SELECT tag,value from sys_param";
+				List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+	
+				for (Map<String, Object> map : maps) {
+					String key = "sys_param." + String.valueOf(map.get("tag"));
+					Object value = map.get("value");
+					systemConfigMap.put(key, value);
+					log.info("loading db sys_param, [key {}=value {}]", key, value);
+				}
+				String propertySourceName = "propertiesInsideDatabase";
+				environment.getPropertySources().addFirst(new MapPropertySource(propertySourceName, systemConfigMap));
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 

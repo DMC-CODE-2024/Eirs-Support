@@ -34,17 +34,17 @@ public class TagController {
 	private final TagService tagService;
 	
 	@PostMapping("save")
-	public @ResponseBody ModuleTagEntity save(@RequestBody ModuleTagDto tagDto, HttpServletRequest request) {
-		return tagService.save(tagDto,request);
+	public ResponseEntity<?> save(@RequestBody ModuleTagDto tagDto, HttpServletRequest request) {
+		return new ResponseEntity<>(tagService.save(tagDto,request), HttpStatus.OK);
 	}
 	@GetMapping("/{id}")
 	public @ResponseBody ModuleTagEntity getById(@PathVariable Long id){
 		return tagService.getById(id);
 	}
 	@PutMapping("/update/{id}")
-	public @ResponseBody ModuleTagEntity update(@RequestBody ModuleTagDto tagDto, @PathVariable Long id, HttpServletRequest request) {
+	public ResponseEntity<?> update(@RequestBody ModuleTagDto tagDto, @PathVariable Long id, HttpServletRequest request) {
 		log.info("Tag:{},update request:{}", id, tagDto);
-		return tagService.update(tagDto, id,request);
+		return new ResponseEntity<>(tagService.update(tagDto, id,request), HttpStatus.OK);
 	}
 	@DeleteMapping("/{id}")
 	public @ResponseBody ModuleTagEntity delete(@PathVariable Long id, HttpServletRequest request) {

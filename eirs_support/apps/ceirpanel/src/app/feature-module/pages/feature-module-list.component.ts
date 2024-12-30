@@ -149,14 +149,17 @@ export class FeatureModuleListComponent extends ExtendableListComponent {
   public selected: any[] = [];
   list: FeatureModuleDto = {totalElements: 0} as FeatureModuleDto;
   @ViewChild(FeatureModuleDeleteComponent) userGroupDelete!: FeatureModuleDeleteComponent;
+  rowSizeForExport!:number;
   constructor(
     private deviceService: DeviceService, 
     private cdRef: ChangeDetectorRef,
      private translate: TranslateService,
      private apicall: ApiUtilService,
      public exportService: ExportService,
-     private featureModuleService: FeatureModuleService) { 
+     private featureModuleService: FeatureModuleService,
+     ) { 
       super();
+      this.apicall.get('/config/frontend').subscribe({next: (data:any) => this.rowSizeForExport = data?.rowSizeForExport || 1000});
   }
 
   refresh(state: ClrDatagridStateInterface) {
@@ -198,11 +201,11 @@ export class FeatureModuleListComponent extends ExtendableListComponent {
   }
   export(state: ClrDatagridStateInterface) {
     const st = _.cloneDeep(state);
-    if(st && st.page) st.page.size = 10000;
+    if(st && st.page) st.page.size = this.rowSizeForExport;
     this.featureModuleService.pagination(st).subscribe({
       next: (feature: FeatureModuleDto) => {
         const modules = feature.content;
-        this.exportService.featureModules(modules, `feature-modules-${new Date().getMilliseconds()}`,{showLabels: true,headers: ["Created On", "Feature Name","Module Name", "Status"]});
+        this.exportService.featureModules(modules, `${_.now()}_feature-modules`,{showLabels: true,headers: ["Created On", "Feature Name","Module Name", "Status"]});
       }
     });
   }
